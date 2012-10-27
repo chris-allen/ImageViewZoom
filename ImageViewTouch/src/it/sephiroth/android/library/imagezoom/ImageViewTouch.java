@@ -30,6 +30,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected boolean mScaleEnabled = true;
 	protected boolean mScrollEnabled = true;
 
+	//FIXME A short zoom gesture registers as a single tap
+    private OnImageViewTouchSingleTapListener singleTapListener;
     private OnImageViewTouchDoubleTapListener doubleTapListener;
 
 	public ImageViewTouch( Context context, AttributeSet attrs ) {
@@ -50,6 +52,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		mDoubleTapDirection = 1;
 	}
 
+    public void setSingleTapListener( OnImageViewTouchSingleTapListener singleTapListener ){
+        this.singleTapListener = singleTapListener;
+    }
+    
     public void setDoubleTapListener( OnImageViewTouchDoubleTapListener doubleTapListener ){
         this.doubleTapListener = doubleTapListener;
     }
@@ -153,7 +159,14 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 	
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+            if( null != singleTapListener ){
+            	singleTapListener.onSingleTap();
+            }
+			return super.onSingleTapConfirmed(e);
+		}
+		
 		@Override
 		public boolean onDoubleTap( MotionEvent e ) {
 			Log.i( LOG_TAG, "onDoubleTap. double tap enabled? " + mDoubleTapToZoomEnabled);
@@ -234,6 +247,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		}
 	}
 
+    public interface OnImageViewTouchSingleTapListener {
+        void onSingleTap();
+    }
+    
     public interface OnImageViewTouchDoubleTapListener {
         void onDoubleTap();
     }
