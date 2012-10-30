@@ -144,18 +144,23 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	 */
 	public boolean canScroll(int direction) {
 		RectF bitmapRect = getBitmapRect();
-		updateRect(bitmapRect, mScrollRect);
-		Rect imageViewRect = new Rect();
-		getGlobalVisibleRect(imageViewRect);
+
+		if(bitmapRect == null || mScrollRect == null)
+			return true;
+		else {
+			updateRect(bitmapRect, mScrollRect);
+			Rect imageViewRect = new Rect();
+			getGlobalVisibleRect(imageViewRect);
 		
-		if (bitmapRect.right >= imageViewRect.right) {
-			if (direction < 0) {
-				return Math.abs(bitmapRect.right - imageViewRect.right) > SCROLL_DELTA_THRESHOLD;
+			if (bitmapRect.right >= imageViewRect.right) {
+				if (direction < 0) {
+					return Math.abs(bitmapRect.right - imageViewRect.right) > SCROLL_DELTA_THRESHOLD;
+				}
 			}
+			
+			double bitmapScrollRectDelta = Math.abs(bitmapRect.left - mScrollRect.left);
+			return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
 		}
-		
-		double bitmapScrollRectDelta = Math.abs(bitmapRect.left - mScrollRect.left);
-		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
 	}
 	
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
