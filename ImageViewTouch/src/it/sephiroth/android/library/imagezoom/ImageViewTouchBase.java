@@ -419,14 +419,16 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		float width = getWidth();
 		float height = getHeight();
 
-		if ( bitmapRect.top >= 0 && bitmapRect.bottom <= height ) scrollRect.top = 0;
-		if ( bitmapRect.left >= 0 && bitmapRect.right <= width ) scrollRect.left = 0;
-		if ( bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > height ) scrollRect.top = (int) ( 0 - bitmapRect.top );
-		if ( bitmapRect.bottom + scrollRect.top <= ( height - 0 ) && bitmapRect.top < 0 )
-			scrollRect.top = (int) ( ( height - 0 ) - bitmapRect.bottom );
-		if ( bitmapRect.left + scrollRect.left >= 0 ) scrollRect.left = (int) ( 0 - bitmapRect.left );
-		if ( bitmapRect.right + scrollRect.left <= ( width - 0 ) ) scrollRect.left = (int) ( ( width - 0 ) - bitmapRect.right );
-		// Log.d( LOG_TAG, "scrollRect(2): " + scrollRect.toString() );
+		if(bitmapRect != null && scrollRect != null) {
+			if ( bitmapRect.top >= 0 && bitmapRect.bottom <= height ) scrollRect.top = 0;
+			if ( bitmapRect.left >= 0 && bitmapRect.right <= width ) scrollRect.left = 0;
+			if ( bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > height ) scrollRect.top = (int) ( 0 - bitmapRect.top );
+			if ( bitmapRect.bottom + scrollRect.top <= ( height - 0 ) && bitmapRect.top < 0 )
+				scrollRect.top = (int) ( ( height - 0 ) - bitmapRect.bottom );
+			if ( bitmapRect.left + scrollRect.left >= 0 ) scrollRect.left = (int) ( 0 - bitmapRect.left );
+			if ( bitmapRect.right + scrollRect.left <= ( width - 0 ) ) scrollRect.left = (int) ( ( width - 0 ) - bitmapRect.right );
+			// Log.d( LOG_TAG, "scrollRect(2): " + scrollRect.toString() );
+		}
 	}
 
 	protected void scrollBy( float distanceX, float distanceY, final double durationMs ) {
