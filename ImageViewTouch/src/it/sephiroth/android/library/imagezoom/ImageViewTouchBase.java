@@ -38,6 +38,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 	protected int mThisWidth = -1, mThisHeight = -1;
+	protected int leftRightPadding = -1, topBottomPadding = -1;
 	protected boolean mFitToScreen = false;
 	final protected float MAX_ZOOM = 2.0f;
 
@@ -81,6 +82,8 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		super.onLayout( changed, left, top, right, bottom );
 		mThisWidth = right - left;
 		mThisHeight = bottom - top;
+		leftRightPadding = mThisWidth/2;
+		topBottomPadding = mThisHeight/2;
 		Runnable r = mOnLayoutRunnable;
 		if ( r != null ) {
 			mOnLayoutRunnable = null;
@@ -309,6 +312,10 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		Matrix m = getImageViewMatrix();
 		mBitmapRect.set( 0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
 		m.mapRect( mBitmapRect );
+		mBitmapRect.left -= leftRightPadding;
+		mBitmapRect.right += leftRightPadding;
+		mBitmapRect.top -= topBottomPadding;
+		mBitmapRect.bottom += topBottomPadding;
 		return mBitmapRect;
 	}
 

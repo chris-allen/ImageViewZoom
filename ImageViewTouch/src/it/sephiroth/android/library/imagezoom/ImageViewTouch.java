@@ -209,7 +209,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			if ( e1 == null || e2 == null ) return false;
 			if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
 			if ( mScaleDetector.isInProgress() ) return false;
-			if ( getScale() == 1f ) return false;
+//			if ( getScale() == 1f ) return false;
 			scrollBy( -distanceX, -distanceY );
 			invalidate();
 			return super.onScroll( e1, e2, distanceX, distanceY );
