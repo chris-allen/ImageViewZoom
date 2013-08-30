@@ -63,8 +63,8 @@ public class ImageMap extends ImageViewTouch {
 			halfWidth = (int) (width/2);
 			height = (int) (overlay.markerImage.getHeight()*getScale());
 			for(MapMarker marker: overlay.markers) {
-				mX = (int) (marker.x*getCoordinateScale());
-				mY = (int) (marker.y*getCoordinateScale());
+				mX = (int) (marker.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
+				mY = (int) (marker.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
 				
 				r = new RectF(origin);
 				r.left += mX*getScale() - halfWidth;
@@ -92,7 +92,7 @@ public class ImageMap extends ImageViewTouch {
 			getImageViewMatrix().mapRect(origin);
 			for(MarkerOverlay overlay: rOverlays) {
 				m = overlay.onTap(origin, (int) ev.getX(), (int) ev.getY(), 
-						getScale(), getCoordinateScale(),
+						getScale(), getValue(mBaseMatrix, Matrix.MSCALE_X),
 						baseValues[Matrix.MTRANS_X], baseValues[Matrix.MTRANS_Y]);
 				if(m != null) {
 					if(listener != null) {
