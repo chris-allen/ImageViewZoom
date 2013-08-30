@@ -38,10 +38,11 @@ public class ImageMap extends ImageViewTouch {
 		circlePaint.setAlpha(175);
 	}
 	
-	public void addOverlay(Bitmap mImage, List<MapMarker> markers) {
+	public MarkerOverlay addOverlay(Bitmap mImage, List<MapMarker> markers) {
 		MarkerOverlay overlay = new MarkerOverlay(context, mImage, markers);
 		overlays.add(overlay);
 		rOverlays.add(0, overlay);
+		return overlay;
 	}
 	
 	public void setOnMarkerTapListener(OnMarkerTapListener l) {
