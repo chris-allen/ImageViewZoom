@@ -31,18 +31,20 @@ public class MarkerOverlay {
 	}
 	
 	public MapMarker onTap(RectF origin, int x, int y, float originScale, float coordScale, float xPad, float yPad) {
-		int mX, mY;
-		int height = (int) (markerImage.getHeight()*originScale);
-		int width = (int) (markerImage.getWidth()*originScale);
-		int halfWidth = width/2;
-		
-		for(MapMarker m: markers) {
-			mX = (int) (origin.left + m.x*coordScale*originScale - halfWidth);
-			mY = (int) (origin.top + m.y*coordScale*originScale - height);
+		if(visible) {
+			int mX, mY;
+			int height = (int) (markerImage.getHeight()*originScale);
+			int width = (int) (markerImage.getWidth()*originScale);
+			int halfWidth = width/2;
 			
-			if(x >= mX && x <= mX+width)
-				if(y >= mY && y <= mY+height)
-					return m;
+			for(MapMarker m: markers) {
+				mX = (int) (origin.left + m.x*coordScale*originScale - halfWidth);
+				mY = (int) (origin.top + m.y*coordScale*originScale - height);
+				
+				if(x >= mX && x <= mX+width)
+					if(y >= mY && y <= mY+height)
+						return m;
+			}
 		}
 		return null;
 	}
