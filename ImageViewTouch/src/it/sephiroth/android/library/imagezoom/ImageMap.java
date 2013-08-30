@@ -59,19 +59,21 @@ public class ImageMap extends ImageViewTouch {
 		RectF origin = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight()), r;
 		getImageViewMatrix().mapRect(origin);
 		for(MarkerOverlay overlay: overlays) {
-			width = (int) (overlay.markerImage.getWidth()*getScale());
-			halfWidth = (int) (width/2);
-			height = (int) (overlay.markerImage.getHeight()*getScale());
-			for(MapMarker marker: overlay.markers) {
-				mX = (int) (marker.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
-				mY = (int) (marker.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
-				
-				r = new RectF(origin);
-				r.left += mX*getScale() - halfWidth;
-				r.right = r.left+width;
-				r.top += mY*getScale() - height;
-				r.bottom = r.top+height;
-				canvas.drawBitmap(overlay.markerImage, null, r, null);
+			if(overlay.isVisible()) {
+				width = (int) (overlay.markerImage.getWidth()*getScale());
+				halfWidth = (int) (width/2);
+				height = (int) (overlay.markerImage.getHeight()*getScale());
+				for(MapMarker marker: overlay.markers) {
+					mX = (int) (marker.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
+					mY = (int) (marker.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
+					
+					r = new RectF(origin);
+					r.left += mX*getScale() - halfWidth;
+					r.right = r.left+width;
+					r.top += mY*getScale() - height;
+					r.bottom = r.top+height;
+					canvas.drawBitmap(overlay.markerImage, null, r, null);
+				}
 			}
 		}
 	}
@@ -95,6 +97,9 @@ public class ImageMap extends ImageViewTouch {
 						getScale(), getValue(mBaseMatrix, Matrix.MSCALE_X),
 						baseValues[Matrix.MTRANS_X], baseValues[Matrix.MTRANS_Y]);
 				if(m != null) {
+					scrollBy((getWidth() / 2) - ev.getX(), 
+							(getHeight() / 2) - ev.getY(),
+							300);
 					if(listener != null) {
 						listener.onTap(m);
 						break;
