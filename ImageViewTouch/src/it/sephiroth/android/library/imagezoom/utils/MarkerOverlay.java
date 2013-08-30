@@ -4,28 +4,44 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.util.Log;
+import android.graphics.RectF;
 
+/**Overlay that stores markers to be drawn on an 
+ * {@link it.sephiroth.android.library.imagezoom.ImageMap ImageMap}.
+ * 
+ * @author Chris Allen
+ */
 public class MarkerOverlay {
 
 	public final Bitmap markerImage;
 	public final List<MapMarker> markers;
+	private boolean visible = true;
 	
 	public MarkerOverlay(Context ctx, Bitmap mImage, List<MapMarker> m) {
 		markerImage = mImage;
 		markers = m;
 	}
 	
-	public MapMarker onTap(int x, int y, float[] matrix) {
-		float scale = matrix[Matrix.MSCALE_X];
-		Log.i("MarkerOverlay", "scale: ("+scale+") tap x: ("+x+") y: ("+y+")");
-		int halfWidth = (int) (markerImage.getWidth()/2*scale);
-		int height = (int) (markerImage.getHeight()*scale);
+	public boolean isVisible() {
+		return visible;
+	}
+	
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+	
+	public MapMarker onTap(RectF origin, int x, int y, float originScale, float coordScale, float xPad, float yPad) {
+		int mX, mY;
+		int height = (int) (markerImage.getHeight()*originScale);
+		int width = (int) (markerImage.getWidth()*originScale);
+		int halfWidth = width/2;
+		
 		for(MapMarker m: markers) {
-			Log.i("MarkerOverlay", "marker x: "+m.x+" y: "+m.y);
-			if(x >= m.x-halfWidth && x <= m.x+halfWidth)
-				if(y >= m.y-height && y <=m.y)
+			mX = (int) (origin.left + m.x*coordScale*originScale - halfWidth);
+			mY = (int) (origin.top + m.y*coordScale*originScale - height);
+			
+			if(x >= mX && x <= mX+width)
+				if(y >= mY && y <= mY+height)
 					return m;
 		}
 		return null;

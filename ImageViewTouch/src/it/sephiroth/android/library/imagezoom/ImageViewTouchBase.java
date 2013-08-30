@@ -35,10 +35,11 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	protected Handler mHandler = new Handler();
 	protected Runnable mOnLayoutRunnable = null;
 	protected float mMaxZoom;
+	protected float bitmapScale;
 	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 	protected int mThisWidth = -1, mThisHeight = -1;
-	protected int leftRightPadding = -1, topBottomPadding = -1;
+	protected int leftRightPadding = 0, topBottomPadding = 0;
 	protected boolean mFitToScreen = false;
 	final protected float MAX_ZOOM = 2.0f;
 
@@ -269,8 +270,10 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		if ( w > viewWidth || h > viewHeight ) {
 			float widthScale = Math.min( viewWidth / w, 2.0f );
 			float heightScale = Math.min( viewHeight / h, 2.0f );
+			Log.i(LOG_TAG, "widthScale: "+widthScale+" heightScale: "+heightScale);
 			float scale = Math.min( widthScale, heightScale );
 			matrix.postScale( scale, scale );
+			Log.i(LOG_TAG, "initialScale: "+scale);
 			float tw = ( viewWidth - w * scale ) / 2.0f;
 			float th = ( viewHeight - h * scale ) / 2.0f;
 			matrix.postTranslate( tw, th );
@@ -296,6 +299,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		float widthScale = Math.min( viewWidth / w, MAX_ZOOM );
 		float heightScale = Math.min( viewHeight / h, MAX_ZOOM );
 		float scale = Math.min( widthScale, heightScale );
+		Log.i(LOG_TAG, "initial scale: "+scale);
 		matrix.postScale( scale, scale );
 		matrix.postTranslate( ( viewWidth - w * scale ) / MAX_ZOOM, ( viewHeight - h * scale ) / MAX_ZOOM );
 	}
@@ -373,6 +377,21 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		}
 		mCenterRect.set( deltaX, deltaY, 0, 0 );
 		return mCenterRect;
+	}
+	
+	protected float getCoordinateScale() {
+		if(bitmapScale > 0)
+			return bitmapScale;
+		
+		final Drawable drawable = getDrawable();
+
+		if ( drawable == null ) return 0;
+		RectF r = new RectF(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+		mBaseMatrix.mapRect(r);
+		Log.i(LOG_TAG, "rHeight: "+r.height()+" d.height: "+drawable.getIntrinsicHeight());
+		
+		bitmapScale = r.height()/(float)drawable.getIntrinsicHeight();
+		return bitmapScale;
 	}
 
 	protected void postTranslate( float deltaX, float deltaY ) {

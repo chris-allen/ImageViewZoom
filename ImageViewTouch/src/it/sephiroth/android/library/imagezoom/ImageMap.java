@@ -11,13 +11,16 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 public class ImageMap extends ImageViewTouch {
+	private Paint circlePaint = new Paint();
 	
 	private Context context;
 	private List<MarkerOverlay> overlays = new ArrayList<MarkerOverlay>();
@@ -31,6 +34,8 @@ public class ImageMap extends ImageViewTouch {
 		super(ctx, attrs);
 		context = ctx;
 		mGestureDetector = new GestureDetector(ctx, new GestureListener(), null, true);
+		circlePaint.setColor(Color.BLUE);
+		circlePaint.setAlpha(175);
 	}
 	
 	public void addOverlay(Bitmap mImage, List<MapMarker> markers) {
@@ -47,19 +52,26 @@ public class ImageMap extends ImageViewTouch {
 	@Override
 	public void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		
+
 		getImageViewMatrix().getValues(baseValues);
-		Matrix m;
-		int halfWidth, height;
+		int width, halfWidth, height;
+		int mX, mY;
+		RectF origin = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight()), r;
+		getImageViewMatrix().mapRect(origin);
 		for(MarkerOverlay overlay: overlays) {
-			halfWidth = overlay.markerImage.getWidth()/2;
-			height = overlay.markerImage.getHeight();
+			width = (int) (overlay.markerImage.getWidth()*getScale());
+			halfWidth = (int) (width/2);
+			height = (int) (overlay.markerImage.getHeight()*getScale());
 			for(MapMarker marker: overlay.markers) {
-				m = new Matrix();
-				m.setValues(baseValues);
-				m.postTranslate((marker.x-halfWidth)*getScale(), 
-						(marker.y-height)*getScale());
-				canvas.drawBitmap(overlay.markerImage, m, null);
+				mX = (int) (marker.x*getCoordinateScale());
+				mY = (int) (marker.y*getCoordinateScale());
+				
+				r = new RectF(origin);
+				r.left += mX*getScale() - halfWidth;
+				r.right = r.left+width;
+				r.top += mY*getScale() - height;
+				r.bottom = r.top+height;
+				canvas.drawBitmap(overlay.markerImage, null, r, null);
 			}
 		}
 	}
@@ -73,11 +85,15 @@ public class ImageMap extends ImageViewTouch {
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
 		public boolean onSingleTapConfirmed(MotionEvent ev) {
+
 			getImageViewMatrix().getValues(baseValues);
-			
 			MapMarker m = null;
+			RectF origin = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+			getImageViewMatrix().mapRect(origin);
 			for(MarkerOverlay overlay: rOverlays) {
-				m = overlay.onTap((int) ev.getX(), (int) ev.getY(), baseValues);
+				m = overlay.onTap(origin, (int) ev.getX(), (int) ev.getY(), 
+						getScale(), getCoordinateScale(),
+						baseValues[Matrix.MTRANS_X], baseValues[Matrix.MTRANS_Y]);
 				if(m != null) {
 					if(listener != null) {
 						listener.onTap(m);
