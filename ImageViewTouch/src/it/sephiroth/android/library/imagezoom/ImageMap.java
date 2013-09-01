@@ -46,7 +46,7 @@ public class ImageMap extends ImageViewTouch {
 		balloonPaint.setColor(Color.BLACK);
 		balloonPaint.setAntiAlias(true);
 		balloonPaint.setFakeBoldText(true);
-		balloonPaint.setTextSize(Conversions.dpToPixels(ctx, 12));
+		balloonPaint.setTextSize(Conversions.dpToPixels(ctx, 14));
 		
 		balloon = (NinePatchDrawable) ctx.getResources().getDrawable(R.drawable.map_balloon);
 		balloon.getPadding(balloonPadding);
@@ -128,7 +128,7 @@ public class ImageMap extends ImageViewTouch {
 			
 			canvas.drawText(currMarker.title, 
 					r.left + (width - textBounds.width())/2,
-					r.top + (height - textBounds.height())/2,
+					r.top + balloonTextPadding/2 + (height - textBounds.height())/2,
 					balloonPaint);
 		}
 	}
@@ -137,6 +137,26 @@ public class ImageMap extends ImageViewTouch {
 	public boolean onTouchEvent(MotionEvent ev) {
 		mGestureDetector.onTouchEvent(ev);
 		return super.onTouchEvent(ev);
+	}
+	
+	public void onMarkerTap(MapMarker m) {
+		currMarker = m;
+		balloonVisible = true;
+
+		RectF origin = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight()), r;
+		getImageViewMatrix().mapRect(origin);
+		int mX = (int) (m.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
+		int mY = (int) (m.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
+		
+		scrollBy((getWidth() / 2) - (origin.left + mX*getScale()),
+				(getHeight() / 2) - (origin.top + mY*getScale()),
+				300);
+		invalidate();
+	}
+	
+	public void clearBalloon() {
+		balloonVisible = false;
+		invalidate();
 	}
 
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -152,19 +172,13 @@ public class ImageMap extends ImageViewTouch {
 						getScale(), getValue(mBaseMatrix, Matrix.MSCALE_X),
 						baseValues[Matrix.MTRANS_X], baseValues[Matrix.MTRANS_Y]);
 				if(m != null) {
-					scrollBy((getWidth() / 2) - ev.getX(), 
-							(getHeight() / 2) - ev.getY(),
-							300);
-					currMarker = m;
-					balloonVisible = true;
+					onMarkerTap(m);
 					if(listener != null)
 						listener.onTap(m);
-					invalidate();
 					return true;
 				}
 			}
-			balloonVisible = false;
-			invalidate();
+			clearBalloon();
 			return true;
 		}
 		
