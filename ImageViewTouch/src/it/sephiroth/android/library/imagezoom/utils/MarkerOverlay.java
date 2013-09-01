@@ -33,8 +33,8 @@ public class MarkerOverlay {
 	public MapMarker onTap(RectF origin, int x, int y, float originScale, float coordScale, float xPad, float yPad) {
 		if(visible) {
 			int mX, mY;
-			int height = (int) (markerImage.getHeight()*originScale);
-			int width = (int) (markerImage.getWidth()*originScale);
+			int height = (int) (markerImage.getHeight());
+			int width = (int) (markerImage.getWidth());
 			int halfWidth = width/2;
 			
 			for(MapMarker m: markers) {

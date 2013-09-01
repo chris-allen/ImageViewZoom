@@ -1,5 +1,6 @@
 package it.sephiroth.android.library.imagezoom;
 
+import it.sephiroth.android.library.imagezoom.utils.Conversions;
 import it.sephiroth.android.library.imagezoom.utils.MapMarker;
 import it.sephiroth.android.library.imagezoom.utils.MarkerOverlay;
 import it.sephiroth.android.library.imagezoom.utils.OnMarkerTapListener;
@@ -14,15 +15,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 public class ImageMap extends ImageViewTouch {
-	private Paint circlePaint = new Paint();
+	private Paint balloonPaint = new Paint();
 	
 	private Context context;
+	private NinePatchDrawable balloon;
+	private Rect balloonPadding = new Rect();
+	private int balloonTextPadding = 6; //dp
+	private MapMarker currMarker;
+	private boolean balloonVisible;
 	private List<MarkerOverlay> overlays = new ArrayList<MarkerOverlay>();
 	private List<MarkerOverlay> rOverlays = new ArrayList<MarkerOverlay>();
 	
@@ -34,8 +42,15 @@ public class ImageMap extends ImageViewTouch {
 		super(ctx, attrs);
 		context = ctx;
 		mGestureDetector = new GestureDetector(ctx, new GestureListener(), null, true);
-		circlePaint.setColor(Color.BLUE);
-		circlePaint.setAlpha(175);
+		
+		balloonPaint.setColor(Color.BLACK);
+		balloonPaint.setAntiAlias(true);
+		balloonPaint.setFakeBoldText(true);
+		balloonPaint.setTextSize(Conversions.dpToPixels(ctx, 12));
+		
+		balloon = (NinePatchDrawable) ctx.getResources().getDrawable(R.drawable.map_balloon);
+		balloon.getPadding(balloonPadding);
+		balloonTextPadding = (int) Conversions.dpToPixels(ctx, balloonTextPadding);
 	}
 	
 	public MarkerOverlay addOverlay(Bitmap mImage, List<MapMarker> markers) {
@@ -54,16 +69,22 @@ public class ImageMap extends ImageViewTouch {
 	public void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 
+		MarkerOverlay currOverlay = null;
+		
+		
 		getImageViewMatrix().getValues(baseValues);
 		int width, halfWidth, height;
 		int mX, mY;
 		RectF origin = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight()), r;
 		getImageViewMatrix().mapRect(origin);
+		
+		// Draw markers
 		for(MarkerOverlay overlay: overlays) {
 			if(overlay.isVisible()) {
-				width = (int) (overlay.markerImage.getWidth()*getScale());
+				width = (int) (overlay.markerImage.getWidth());
 				halfWidth = (int) (width/2);
-				height = (int) (overlay.markerImage.getHeight()*getScale());
+				height = (int) (overlay.markerImage.getHeight());
+				
 				for(MapMarker marker: overlay.markers) {
 					mX = (int) (marker.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
 					mY = (int) (marker.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
@@ -74,8 +95,41 @@ public class ImageMap extends ImageViewTouch {
 					r.top += mY*getScale() - height;
 					r.bottom = r.top+height;
 					canvas.drawBitmap(overlay.markerImage, null, r, null);
+					
+					if(marker == currMarker)
+						currOverlay = overlay;
 				}
 			}
+		}
+		
+		// Draw balloon
+		if(balloonVisible && currOverlay != null && currMarker.title.length() > 0) {
+			Rect textBounds = new Rect();
+			balloonPaint.getTextBounds(currMarker.title, 0, currMarker.title.length(), textBounds);
+			
+			mX = (int) (currMarker.x*getValue(mBaseMatrix, Matrix.MSCALE_X));
+			mY = (int) (currMarker.y*getValue(mBaseMatrix, Matrix.MSCALE_X));
+			
+			width = Math.max(textBounds.width() + balloonPadding.width(), balloon.getIntrinsicWidth()) + balloonTextPadding*2;
+			height = Math.max(textBounds.height() + balloonPadding.height(), balloon.getIntrinsicHeight());
+			float markerHeight = currOverlay.markerImage.getHeight();
+			
+			r = new RectF(origin);
+			r.left += mX*getScale() - width/2;
+			r.right = r.left + width;
+			r.top += mY*getScale() - height - markerHeight;
+			r.bottom = r.top + height;
+			
+			Rect bounds = new Rect();
+			r.round(bounds);
+			balloon.setBounds(bounds);
+			balloon.draw(canvas);
+			
+			
+			canvas.drawText(currMarker.title, 
+					r.left + (width - textBounds.width())/2,
+					r.top + (height - textBounds.height())/2,
+					balloonPaint);
 		}
 	}
 
@@ -101,12 +155,16 @@ public class ImageMap extends ImageViewTouch {
 					scrollBy((getWidth() / 2) - ev.getX(), 
 							(getHeight() / 2) - ev.getY(),
 							300);
-					if(listener != null) {
+					currMarker = m;
+					balloonVisible = true;
+					if(listener != null)
 						listener.onTap(m);
-						break;
-					}
+					invalidate();
+					return true;
 				}
 			}
+			balloonVisible = false;
+			invalidate();
 			return true;
 		}
 		
