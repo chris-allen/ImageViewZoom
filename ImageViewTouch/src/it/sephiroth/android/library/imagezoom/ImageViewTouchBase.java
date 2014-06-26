@@ -40,7 +40,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	protected final float[] mMatrixValues = new float[9];
 	protected int mThisWidth = -1, mThisHeight = -1;
 	protected int leftRightPadding = 0, topBottomPadding = 0;
-	protected boolean mFitToScreen = false;
+	protected boolean mFitToScreen = false, allowCenterOnEdge = false;
 	final protected float MAX_ZOOM = 2.0f;
 
 	protected RectF mBitmapRect = new RectF();
@@ -304,6 +304,10 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		matrix.getValues( mMatrixValues );
 		return mMatrixValues[whichValue];
 	}
+	
+	public void setAllowCenterOnEdge(boolean allow) {
+		allowCenterOnEdge = allow;
+	}
 
 	protected RectF getBitmapRect() {
 		final Drawable drawable = getDrawable();
@@ -312,10 +316,12 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		Matrix m = getImageViewMatrix();
 		mBitmapRect.set( 0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
 		m.mapRect( mBitmapRect );
-		mBitmapRect.left -= leftRightPadding;
-		mBitmapRect.right += leftRightPadding;
-		mBitmapRect.top -= topBottomPadding;
-		mBitmapRect.bottom += topBottomPadding;
+		if (allowCenterOnEdge) {
+			mBitmapRect.left -= leftRightPadding;
+			mBitmapRect.right += leftRightPadding;
+			mBitmapRect.top -= topBottomPadding;
+			mBitmapRect.bottom += topBottomPadding;
+		}
 		return mBitmapRect;
 	}
 
